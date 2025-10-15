@@ -14,6 +14,11 @@
 		580932482BDA322400B3CDEB /* DemoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 580932472BDA322400B3CDEB /* DemoTests.swift */; };
 		580932522BDA322400B3CDEB /* DemoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 580932512BDA322400B3CDEB /* DemoUITests.swift */; };
 		580932542BDA322400B3CDEB /* DemoUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 580932532BDA322400B3CDEB /* DemoUITestsLaunchTests.swift */; };
+		58A200102BDA400000000001 /* OfflineAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58A100102BDA400000000001 /* OfflineAsset.swift */; };
+		58A200112BDA400000000001 /* FairPlayDRMManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58A100112BDA400000000001 /* FairPlayDRMManager.swift */; };
+		58A200122BDA400000000001 /* FairPlayResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58A100122BDA400000000001 /* FairPlayResourceLoaderDelegate.swift */; };
+		58A200132BDA400000000001 /* OfflineDownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58A100132BDA400000000001 /* OfflineDownloadManager.swift */; };
+		58A200142BDA400000000001 /* OfflinePlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58A100142BDA400000000001 /* OfflinePlayerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +50,12 @@
 		5809324D2BDA322400B3CDEB /* DemoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DemoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		580932512BDA322400B3CDEB /* DemoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoUITests.swift; sourceTree = "<group>"; };
 		580932532BDA322400B3CDEB /* DemoUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		58A100102BDA400000000001 /* OfflineAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/OfflineAsset.swift; sourceTree = "<group>"; };
+		58A100112BDA400000000001 /* FairPlayDRMManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRM/FairPlayDRMManager.swift; sourceTree = "<group>"; };
+		58A100122BDA400000000001 /* FairPlayResourceLoaderDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRM/FairPlayResourceLoaderDelegate.swift; sourceTree = "<group>"; };
+		58A100132BDA400000000001 /* OfflineDownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Download/OfflineDownloadManager.swift; sourceTree = "<group>"; };
+		58A100142BDA400000000001 /* OfflinePlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player/OfflinePlayerView.swift; sourceTree = "<group>"; };
+		58A100202BDA400000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Demo/Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +111,12 @@
 				580932392BDA322300B3CDEB /* Assets.xcassets */,
 				5809323B2BDA322300B3CDEB /* Demo.entitlements */,
 				5809323C2BDA322300B3CDEB /* Preview Content */,
+				58A100202BDA400000000001 /* Info.plist */,
+				58A100102BDA400000000001 /* OfflineAsset.swift */,
+				58A100112BDA400000000001 /* FairPlayDRMManager.swift */,
+				58A100122BDA400000000001 /* FairPlayResourceLoaderDelegate.swift */,
+				58A100132BDA400000000001 /* OfflineDownloadManager.swift */,
+				58A100142BDA400000000001 /* OfflinePlayerView.swift */,
 			);
 			path = Demo;
 			sourceTree = "<group>";
@@ -261,6 +278,11 @@
 			files = (
 				580932382BDA322100B3CDEB /* ContentView.swift in Sources */,
 				580932362BDA322100B3CDEB /* DemoApp.swift in Sources */,
+				58A200102BDA400000000001 /* OfflineAsset.swift in Sources */,
+				58A200112BDA400000000001 /* FairPlayDRMManager.swift in Sources */,
+				58A200122BDA400000000001 /* FairPlayResourceLoaderDelegate.swift in Sources */,
+				58A200132BDA400000000001 /* OfflineDownloadManager.swift in Sources */,
+				58A200142BDA400000000001 /* OfflinePlayerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
