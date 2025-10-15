@@ -20,6 +20,7 @@ final class AppState: ObservableObject {
 struct ContentView: View {
     @StateObject private var appState = AppState()
     @StateObject private var downloadManager = OfflineDownloadManager()
+    @State private var muteAudio: Bool = false
     
     var body: some View {
         NavigationView {
@@ -29,6 +30,7 @@ struct ContentView: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled(true)
                     Toggle("FairPlay DRM", isOn: $appState.isDRMProtected)
+                    Toggle("Mute audio (workaround for bad AAC)", isOn: $muteAudio)
                     if appState.isDRMProtected {
                         TextField("Certificate URL", text: $appState.certificateURLString)
                             .textInputAutocapitalization(.never)
@@ -67,7 +69,11 @@ struct ContentView: View {
            let licenseURL = URL(string: appState.licenseServerURLString) {
             downloadManager.configureFairPlay(certificateURL: certURL, licenseURL: licenseURL)
         }
-        downloadManager.startDownload(hlsURL: url, title: url.lastPathComponent)
+        downloadManager.startDownload(hlsURL: url,
+                                      title: url.lastPathComponent,
+                                      assetTitle: nil,
+                                      muteAudio: muteAudio,
+                                      preferredAudioLocale: nil)
     }
 }
 

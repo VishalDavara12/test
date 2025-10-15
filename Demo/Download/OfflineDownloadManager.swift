@@ -28,23 +28,49 @@ final class OfflineDownloadManager: NSObject, ObservableObject {
                                          delegateQueue: OperationQueue.main)
     }()
 
-    func startDownload(hlsURL: URL, title: String, assetTitle: String? = nil) {
+    func startDownload(hlsURL: URL,
+                       title: String,
+                       assetTitle: String? = nil,
+                       muteAudio: Bool = false,
+                       preferredAudioLocale: Locale? = nil) {
         let urlAsset = AVURLAsset(url: hlsURL)
         if let fairPlayDelegate = fairPlayDelegate {
             urlAsset.resourceLoader.setDelegate(fairPlayDelegate, queue: DispatchQueue.main)
         }
-        let options: [String: Any] = [
-            AVAssetDownloadTaskMinimumRequiredMediaBitrateKey: 265_000 // ~240p for small size
-        ]
-        let task = downloadSession.makeAssetDownloadTask(asset: urlAsset,
-                                                         assetTitle: assetTitle ?? title,
-                                                         assetArtworkData: nil,
-                                                         options: options)
-        guard let task else { return }
-        let id = UUID()
-        let info = DownloadTaskInfo(id: id, task: task, urlAsset: urlAsset, progress: 0, title: title, localURL: nil)
-        downloads[id] = info
-        task.resume()
+
+        // Load media selection groups before creating the download task
+        urlAsset.loadValuesAsynchronously(forKeys: ["availableMediaCharacteristicsWithMediaSelectionOptions"]) { [weak self] in
+            guard let self = self else { return }
+
+            var downloadOptions: [String: Any] = [
+                AVAssetDownloadTaskMinimumRequiredMediaBitrateKey: 265_000 // ~240p for small size
+            ]
+
+            if let audioGroup = urlAsset.mediaSelectionGroup(forMediaCharacteristic: .audible) {
+                let mediaSelection = urlAsset.preferredMediaSelection.mutableCopy() as! AVMutableMediaSelection
+                if muteAudio {
+                    mediaSelection.select(nil, in: audioGroup)
+                } else if let locale = preferredAudioLocale {
+                    let localeOptions = AVMediaSelectionGroup.mediaSelectionOptions(from: audioGroup.options, with: locale)
+                    if let first = localeOptions.first {
+                        mediaSelection.select(first, in: audioGroup)
+                    }
+                }
+                downloadOptions[AVAssetDownloadTaskMediaSelectionKey] = mediaSelection.copy() as! AVMediaSelection
+            }
+
+            let task = self.downloadSession.makeAssetDownloadTask(asset: urlAsset,
+                                                                  assetTitle: assetTitle ?? title,
+                                                                  assetArtworkData: nil,
+                                                                  options: downloadOptions)
+            guard let task else { return }
+            let id = UUID()
+            let info = DownloadTaskInfo(id: id, task: task, urlAsset: urlAsset, progress: 0, title: title, localURL: nil)
+            DispatchQueue.main.async {
+                self.downloads[id] = info
+                task.resume()
+            }
+        }
     }
 
     func configureFairPlay(certificateURL: URL, licenseURL: URL) {
