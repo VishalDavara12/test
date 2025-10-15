@@ -49,26 +49,6 @@ final class FairPlayDRMManager: NSObject {
 
     // MARK: - SPC / CKC
 
-    func makeSPC(for contentId: String, asset: AVURLAsset, options: [String: Any]? = nil, completion: @escaping (Result<Data, Error>) -> Void) {
-        loadCertificateIfNeeded { [weak self] result in
-            switch result {
-            case .failure(let error):
-                completion(.failure(error))
-            case .success(let certificateData):
-                do {
-                    let spcData = try asset
-                        .resourceLoader
-                        .streamingContentKeyRequestData(forApp: certificateData,
-                                                        contentIdentifier: Data(contentId.utf8),
-                                                        options: options)
-                    completion(.success(spcData))
-                } catch {
-                    completion(.failure(DRMError.spcGenerationFailed))
-                }
-            }
-        }
-    }
-
     /// Generate SPC using the loadingRequest helper (preferred inside resource loader delegate)
     func makeSPC(loadingRequest: AVAssetResourceLoadingRequest,
                  contentId: String,
