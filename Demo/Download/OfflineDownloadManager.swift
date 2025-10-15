@@ -9,9 +9,12 @@ final class OfflineDownloadManager: NSObject, ObservableObject {
         let urlAsset: AVURLAsset
         var progress: Double
         var title: String
+        var localURL: URL?
     }
 
     @Published private(set) var downloads: [UUID: DownloadTaskInfo] = [:]
+    private var fairPlayManager: FairPlayDRMManager?
+    private var fairPlayDelegate: FairPlayResourceLoaderDelegate?
 
     private lazy var configuration: URLSessionConfiguration = {
         let config = URLSessionConfiguration.background(withIdentifier: "com.demo.hls.offline")
@@ -27,6 +30,9 @@ final class OfflineDownloadManager: NSObject, ObservableObject {
 
     func startDownload(hlsURL: URL, title: String, assetTitle: String? = nil) {
         let urlAsset = AVURLAsset(url: hlsURL)
+        if let fairPlayDelegate = fairPlayDelegate {
+            urlAsset.resourceLoader.setDelegate(fairPlayDelegate, queue: DispatchQueue.main)
+        }
         let options: [String: Any] = [
             AVAssetDownloadTaskMinimumRequiredMediaBitrateKey: 265_000 // ~240p for small size
         ]
@@ -36,9 +42,16 @@ final class OfflineDownloadManager: NSObject, ObservableObject {
                                                          options: options)
         guard let task else { return }
         let id = UUID()
-        let info = DownloadTaskInfo(id: id, task: task, urlAsset: urlAsset, progress: 0, title: title)
+        let info = DownloadTaskInfo(id: id, task: task, urlAsset: urlAsset, progress: 0, title: title, localURL: nil)
         downloads[id] = info
         task.resume()
+    }
+
+    func configureFairPlay(certificateURL: URL, licenseURL: URL) {
+        let manager = FairPlayDRMManager()
+        manager.configure(certificateURL: certificateURL, licenseServerURL: licenseURL)
+        self.fairPlayManager = manager
+        self.fairPlayDelegate = FairPlayResourceLoaderDelegate(drmManager: manager)
     }
 
     func localURL(for taskIdentifier: Int) -> URL? {
@@ -53,6 +66,7 @@ extension OfflineDownloadManager: AVAssetDownloadDelegate {
         if let id = downloads.first(where: { $1.task == assetDownloadTask })?.key {
             var info = downloads[id]!
             info.progress = 1.0
+            info.localURL = location
             downloads[id] = info
         }
     }

@@ -7,109 +7,67 @@
 
 import SwiftUI
 import Foundation
+import AVFoundation
+import AVKit
 
-struct Post: Codable, Identifiable {
-    let id: Int
-    let title: String
-    let body: String
-}
-class DataService {
-    private let baseURL = "https://jsonplaceholder.typicode.com"
-    private let pageSize = 30
-    private var currentPage = 1
-    
-    func fetchPosts(page: Int, completion: @escaping ([Post]?, Error?) -> Void) {
-        let urlString = "\(baseURL)/posts?_page=\(page)&_limit=\(pageSize)"
-        guard let url = URL(string: urlString) else {
-            completion(nil, NSError(domain: "Invalid URL", code: 0, userInfo: nil))
-            return
-        }
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            guard let data = data, error == nil else {
-                completion(nil, error)
-                return
-            }
-            debugPrint(String(decoding: data, as: UTF8.self))
-            do {
-                let posts = try JSONDecoder().decode([Post].self, from: data)
-                completion(posts, nil)
-            } catch {
-                completion(nil, error)
-            }
-        }.resume()
-    }
-    
-    func loadMorePosts(completion: @escaping ([Post]?, Error?) -> Void) {
-        currentPage += 1
-        fetchPosts(page: currentPage, completion: completion)
-    }
+final class AppState: ObservableObject {
+    @Published var hlsURLString: String = ""
+    @Published var isDRMProtected: Bool = false
+    @Published var certificateURLString: String = ""
+    @Published var licenseServerURLString: String = ""
 }
 
 struct ContentView: View {
-    @State private var posts: [Post] = []
-    @State private var isLoading = false
-    let dataService = DataService()
+    @StateObject private var appState = AppState()
+    @StateObject private var downloadManager = OfflineDownloadManager()
     
     var body: some View {
         NavigationView {
-            ScrollViewReader { scrollView in
-                List(posts) { post in
-                    NavigationLink(destination:
-                                    VStack(spacing:20) {
-                        Text(post.title)
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .multilineTextAlignment(.center)
-                        Text(post.body)
-                            .multilineTextAlignment(.center)
-                        Spacer()
+            Form {
+                Section(header: Text("Source")) {
+                    TextField("HLS URL (m3u8)", text: $appState.hlsURLString)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled(true)
+                    Toggle("FairPlay DRM", isOn: $appState.isDRMProtected)
+                    if appState.isDRMProtected {
+                        TextField("Certificate URL", text: $appState.certificateURLString)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled(true)
+                        TextField("License Server URL", text: $appState.licenseServerURLString)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled(true)
                     }
-                    ) {
-                        Text(post.title)
-                            .id(post.id)
-                            .onAppear {
-                                if let index = posts.firstIndex(where: { $0.id == post.id }) {
-                                    self.getNextPageIfNecessary(encounteredIndex: index)
-                                }
+                    Button("Download") { startDownload() }
+                        .disabled(URL(string: appState.hlsURLString) == nil)
+                }
+
+                Section(header: Text("Downloads")) {
+                    ForEach(Array(downloadManager.downloads.values).sorted(by: { $0.title < $1.title })) { info in
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(info.title)
+                                ProgressView(value: info.progress)
                             }
+                            Spacer()
+                            if let local = info.localURL {
+                                NavigationLink("Play") { OfflinePlayerView(localURL: local) }
+                            }
+                        }
                     }
                 }
-                .navigationTitle("Posts")
-                .onAppear(perform: fetchPosts)
             }
+            .navigationTitle("Offline VOD")
         }
     }
     
-    private func getNextPageIfNecessary(encounteredIndex: Int) {
-        guard encounteredIndex == posts.count - 1 else { return }
-        loadMorePosts()
-        
-    }
-    
-    func fetchPosts() {
-        guard !isLoading else { return }
-        isLoading = true
-        dataService.fetchPosts(page: 1) { fetchedPosts, error in
-            if let fetchedPosts = fetchedPosts {
-                self.posts = fetchedPosts
-            } else if let error = error {
-                print("Error fetching posts: \(error)")
-            }
-            isLoading = false
+    private func startDownload() {
+        guard let url = URL(string: appState.hlsURLString) else { return }
+        if appState.isDRMProtected,
+           let certURL = URL(string: appState.certificateURLString),
+           let licenseURL = URL(string: appState.licenseServerURLString) {
+            downloadManager.configureFairPlay(certificateURL: certURL, licenseURL: licenseURL)
         }
-    }
-    
-    func loadMorePosts() {
-        guard !isLoading else { return }
-        isLoading = true
-        dataService.loadMorePosts { morePosts, error in
-            if let morePosts = morePosts {
-                self.posts.append(contentsOf: morePosts)
-            } else if let error = error {
-                print("Error loading more posts: \(error)")
-            }
-            isLoading = false
-        }
+        downloadManager.startDownload(hlsURL: url, title: url.lastPathComponent)
     }
 }
 

@@ -69,6 +69,30 @@ final class FairPlayDRMManager: NSObject {
         }
     }
 
+    /// Generate SPC using the loadingRequest helper (preferred inside resource loader delegate)
+    func makeSPC(loadingRequest: AVAssetResourceLoadingRequest,
+                 contentId: String,
+                 options: [String: Any]? = nil,
+                 completion: @escaping (Result<Data, Error>) -> Void) {
+        loadCertificateIfNeeded { result in
+            switch result {
+            case .failure(let error):
+                completion(.failure(error))
+            case .success(let certificateData):
+                do {
+                    let spc = try loadingRequest.streamingContentKeyRequestData(
+                        forApp: certificateData,
+                        contentIdentifier: Data(contentId.utf8),
+                        options: options
+                    )
+                    completion(.success(spc))
+                } catch {
+                    completion(.failure(DRMError.spcGenerationFailed))
+                }
+            }
+        }
+    }
+
     func requestCKC(spcData: Data, contentId: String, completion: @escaping (Result<Data, Error>) -> Void) {
         guard let licenseServerURL = licenseServerURL else {
             completion(.failure(DRMError.licenseFailed))
