@@ -17,6 +17,7 @@ final class FairPlayDRMManager: NSObject {
     var licenseServerURL: URL?
 
     private var appCertificate: Data?
+    var contentIdOverride: ((URL) -> String)?
 
     func configure(certificateURL: URL, licenseServerURL: URL) {
         self.certificateURL = certificateURL
@@ -81,6 +82,7 @@ final class FairPlayDRMManager: NSObject {
         var request = URLRequest(url: licenseServerURL)
         request.httpMethod = "POST"
         request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
+        // Many DRM servers require using base64 spc or adding headers. Customize here if needed.
         request.httpBody = spcData
 
         let task = URLSession.shared.dataTask(with: request) { data, response, error in

@@ -15,12 +15,15 @@ struct OfflinePlayerView: View {
     }
 
     private func configureAndPlay() {
+        // Use a URLAsset with HTTP header passthrough disabled; offline should read from file URL
         let asset = AVURLAsset(url: localURL)
         if let delegate = resourceLoaderDelegate {
             asset.resourceLoader.setDelegate(delegate, queue: .main)
         }
+        // Ensure automaticallyWaitsToMinimizeStalling off for offline
         let item = AVPlayerItem(asset: asset)
         let player = AVPlayer(playerItem: item)
+        player.automaticallyWaitsToMinimizeStalling = false
         self.player = player
         player.play()
     }

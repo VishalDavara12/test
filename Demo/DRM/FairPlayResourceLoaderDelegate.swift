@@ -16,7 +16,12 @@ final class FairPlayResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDeleg
             return false
         }
 
-        let contentId: String = Self.extractContentId(from: url)
+        let contentId: String
+        if let override = drmManager.contentIdOverride {
+            contentId = override(url)
+        } else {
+            contentId = Self.extractContentId(from: url)
+        }
         let options: [String: Any] = [
             AVAssetResourceLoadingRequestStreamingContentKeyRequestRequiresPersistentKey: true
         ]

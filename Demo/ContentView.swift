@@ -71,6 +71,8 @@ struct ContentView: View {
            let certURL = URL(string: appState.certificateURLString),
            let licenseURL = URL(string: appState.licenseServerURLString) {
             downloadManager.configureFairPlay(certificateURL: certURL, licenseURL: licenseURL)
+            // Example: some providers embed content id in query; customize if needed
+            // downloadManager.fairPlayResourceLoaderDelegate?.drmManager.contentIdOverride = { skdURL in skdURL.host ?? "" }
         }
         downloadManager.startDownload(hlsURL: url,
                                       title: url.lastPathComponent,

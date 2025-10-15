@@ -10,6 +10,7 @@ final class OfflineDownloadManager: NSObject, ObservableObject {
         var progress: Double
         var title: String
         var localURL: URL?
+        var originalRemoteURL: URL { urlAsset.url }
     }
 
     @Published private(set) var downloads: [UUID: DownloadTaskInfo] = [:]
