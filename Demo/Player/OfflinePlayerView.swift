@@ -3,6 +3,7 @@ import AVKit
 
 struct OfflinePlayerView: View {
     let localURL: URL
+    var resourceLoaderDelegate: AVAssetResourceLoaderDelegate? = nil
     @State private var player: AVPlayer? = nil
 
     var body: some View {
@@ -15,6 +16,9 @@ struct OfflinePlayerView: View {
 
     private func configureAndPlay() {
         let asset = AVURLAsset(url: localURL)
+        if let delegate = resourceLoaderDelegate {
+            asset.resourceLoader.setDelegate(delegate, queue: .main)
+        }
         let item = AVPlayerItem(asset: asset)
         let player = AVPlayer(playerItem: item)
         self.player = player

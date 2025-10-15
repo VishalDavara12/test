@@ -16,6 +16,8 @@ final class OfflineDownloadManager: NSObject, ObservableObject {
     private var fairPlayManager: FairPlayDRMManager?
     private var fairPlayDelegate: FairPlayResourceLoaderDelegate?
 
+    var fairPlayResourceLoaderDelegate: FairPlayResourceLoaderDelegate? { fairPlayDelegate }
+
     private lazy var configuration: URLSessionConfiguration = {
         let config = URLSessionConfiguration.background(withIdentifier: "com.demo.hls.offline")
         config.allowsCellularAccess = true

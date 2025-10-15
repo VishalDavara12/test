@@ -52,7 +52,10 @@ struct ContentView: View {
                             }
                             Spacer()
                             if let local = info.localURL {
-                                NavigationLink("Play") { OfflinePlayerView(localURL: local) }
+                                NavigationLink("Play") {
+                                    OfflinePlayerView(localURL: local,
+                                                      resourceLoaderDelegate: downloadManager.fairPlayResourceLoaderDelegate)
+                                }
                             }
                         }
                     }
